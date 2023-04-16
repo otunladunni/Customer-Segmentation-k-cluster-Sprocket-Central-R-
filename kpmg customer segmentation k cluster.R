@@ -9,7 +9,7 @@ summary(customer)
 #change n/a values to NA 
 customer[customer == "n/a"] <- NA
 
-#get rid of rows with missing values (NA)
+#get rid of rows with missing values
 customer <- customer[complete.cases(customer), ]
  
 #seperate numerical from character variables
@@ -18,21 +18,21 @@ customer_numeric <- customer %>%
 customer_character <- customer %>%
   select_if (is.character)
 
-#transform character to numerical with dummy
+#transform character to numerical with fastDummies package
 install.packages("fastDummies")
 library (fastDummies)
 customer_character <- dummy_cols(customer_character, remove_most_frequent_dummy = TRUE)
 
-#finalize the dataset
+#finalize the dataset for k-means clustering
 customer_numeric <- cbind(customer_numeric, customer_character[, 5:17])
 
-#rename a column
+#rename some columns
 names(customer_numeric)[1:2] <- c("bike_purchases", "age")
 
 #scale the dataset
 customer_numeric[ ,1:15] <- scale(customer_numeric[ , 1:15])
 
-#using the elbow rule (determining the number of clusters)
+#using the elbow rule (determining the number of clusters) with weighted sum of squares
 install.packages("factoextra")
 library(factoextra)
 fviz_nbclust(customer_numeric, kmeans, method = "wss") +
@@ -51,5 +51,5 @@ write.csv(clusters$centers, file = "customer clusters.csv")
 #merge cluster with customer data
 customer_final <- cbind(customer, clusters$cluster)
 
-#### export
+#### export customer_final
 write.csv(customer_final, file = "customers final.csv")
